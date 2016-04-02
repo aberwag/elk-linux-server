@@ -1,0 +1,42 @@
+elasticsearch:
+    image: elasticsearch
+    hostname: elasticsearch
+    restart: always
+    net: bridge
+    command: elasticsearch -Des.network.bind_host=0.0.0.0
+    expose:
+        - "9200"
+        - "9300"
+    volumes:
+        - /etc/localtime:/etc/localtime:ro
+        - /etc/timezone:/etc/timezone:ro
+        - ./elasticsearch/data:/usr/share/elasticsearch/data
+#
+logstash:
+    image: logstash
+    hostname: logstash
+    restart: always
+    net: bridge
+    command: logstash -f /usr/local/logstash/config/logstash.conf
+    links:
+        - elasticsearch
+    volumes:
+        - /etc/localtime:/etc/localtime:ro
+        - /etc/timezone:/etc/timezone:ro
+        - ./logstash/:/usr/local/logstash/config
+        - /var/log/dns/queries.log:/usr/local/logstash/dns/queries.log
+        - /var/log/apache/:/usr/local/logstash/apache/:ro
+#
+kibana:
+    image: kibana
+    hostname: kibana
+    restart: always
+    net: bridge
+    links:
+        - elasticsearch
+    volumes:
+        - /etc/localtime:/etc/localtime:ro
+        - /etc/timezone:/etc/timezone:ro
+    ports:
+        - "5601:5601"
+#
